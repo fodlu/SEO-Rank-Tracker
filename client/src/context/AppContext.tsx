@@ -56,7 +56,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             if(res.data.success) {
                 setToken(res.data.token)
                 setUser(res.data.user)
-                localStorage.setItem('token': res.data.token)
+                localStorage.setItem('token', res.data.token)
                 return {success: true}
             }
             return {success: false, message: res.data.message}
@@ -65,13 +65,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
     };
 
-	const register = async (email: string, password: string, name: string) => {
+	const register = async (name: string, email: string, password: string) => {
         try {
-            const res = await axios.post(`${backendUrl}/api/auth/register`, {email, name, password});
+            const res = await axios.post(`${backendUrl}/api/auth/register`, {name, email, password});
             if(res.data.success) {
                 setToken(res.data.token)
                 setUser(res.data.user)
-                localStorage.setItem('token': res.data.token)
+                localStorage.setItem('token', res.data.token)
                 return {success: true}
             }
             return {success: false, message: res.data.message}
