@@ -96,7 +96,7 @@ export const getAnalysis = async (req, res) => {
 
         res.json({success: true, analysis})
     } catch (error) {
-
+        // empty block
     }
 };
 
