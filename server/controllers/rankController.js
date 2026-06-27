@@ -101,6 +101,7 @@ export const refreshKeyword = async (req, res) => {
 			return res
 				.status(404)
 				.json({ success: false, message: "Keyword tracking not found" });
+				
 		tracking.status = "checking";
 		await tracking.save();
 		res.json({ success: true, message: "Rank check started" });
