@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Clock, Trash2, ExternalLink, Search, AlertCircle, Loader2, Filter, ArrowUpDown } from "lucide-react";
 import ScoreGauge from "../components/ScoreGauge";
-import { dummyAnalysisData } from "../assets/assets";
+import { useApp } from "../context/AppContext";
 
 interface AnalysisItem {
     _id: string;
@@ -19,6 +19,7 @@ interface AnalysisItem {
 }
 
 export default function History() {
+    const {api} = useApp();
     const [analyses, setAnalyses] = useState<AnalysisItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -30,19 +31,29 @@ export default function History() {
 
     const fetchAnalyses = async () => {
         setLoading(true);
-        setTimeout(() => {
-            setAnalyses(dummyAnalysisData);
-            setTotalPages(1);
-            setLoading(false);
-        }, 1000);
+        try {
+            const res = await api.get(`/api/analysis/list?page=${page}&limit=${12}`);
+
+            if(res.data.success) {
+                setAnalyses(res.data.analyses);
+                setTotalPages(res.data.pagination.pages)
+            }
+        } catch (error) {
+            console.error("Failed to fetch: ", error);
+        }
+        setLoading(false);
     };
 
     const handleDelete = async (id: string) => {
         if (!confirm("Delete this analysis?")) return;
         setDeleting(id);
-        setTimeout(() => {
-            setDeleting(null);
-        }, 1000);
+        try {
+            await api.delete(`/api/analysis/${id}`);
+            setAnalyses((prev) => prev.filter((a) => a._id !== id ))
+        } catch (error) {
+            console.error("Failed to delete: ", error);
+        }
+        setDeleting(null)
     };
 
     const getScoreClass = (s: number) => {
@@ -159,11 +170,11 @@ export default function History() {
                                     {a.status === "completed" ? (
                                         <ScoreGauge score={a.overallScore} size={52} strokeWidth={4} />
                                     ) : a.status === "processing" ? (
-                                        <div className="w-[52px] h-[52px] rounded-full glass flex items-center justify-center">
+                                        <div className="w-13 h-13 rounded-full glass flex items-center justify-center">
                                             <Loader2 size={20} className="text-primary animate-spin" />
                                         </div>
                                     ) : (
-                                        <div className="w-[52px] h-[52px] rounded-full glass flex items-center justify-center">
+                                        <div className="w-13 h-13 rounded-full glass flex items-center justify-center">
                                             <AlertCircle size={20} className="text-danger" />
                                         </div>
                                     )}
