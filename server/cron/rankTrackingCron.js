@@ -11,7 +11,7 @@ export function startRankTrackingCron() {
 
         try {
             const activeTracking = await KeywordTracking.find({active: true});
-            for(const tracking for activeTracking) {
+            for(const tracking of activeTracking) {
                 tracking.status = "checking";
                 await tracking.save();
 

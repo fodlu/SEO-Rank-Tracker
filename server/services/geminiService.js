@@ -51,7 +51,7 @@ const seoAnalysisSchema = {
 	required: ["overallScore", "categories", "keywords", "issues"],
 };
 
-export async function analyzeSeoData(scrapeData) {
+export async function analyzeSeoData(scrapedData) {
 	try {
 		// Prompt for getting SEO Analysis structured data from AI
 		const prompt = `You are an expert SEO analyst. Analyze the following website data and provide a comprehensive SEO audit.
@@ -113,10 +113,15 @@ export async function analyzeSeoData(scrapeData) {
         Extract top 10 keywords by frequency from the page content.`;
 
 		const response = await ai.models.generateContent({
-			model: "gema-4-31b-it",
-			contents: [{ role: "user", parts: [{ text: prompt }] }],
+			model: "gemma-4-31b-it", // Ensure this is a supported Gemini/Gemma model name
+			contents: [
+				{
+					role: "user",
+					parts: [{ text: prompt }],
+				},
+			],
 			config: {
-				responseMimeType: "application/json",
+				responseMimeType: "application/json", // Must be a string
 				responseSchema: seoAnalysisSchema,
 			},
 		});
@@ -126,5 +131,6 @@ export async function analyzeSeoData(scrapeData) {
 		return { success: true, data: analysis };
 	} catch (error) {
 		console.error("Gemini analysis error: ", error.message);
+		return {success: false, error: error.message}
 	}
 }

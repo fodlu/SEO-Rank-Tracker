@@ -27,7 +27,7 @@ export async function scrapUrl(url) {
 			return { success: false, error: error.message };
 		}
 
-		const loadTime = Date.now - startTime;
+		const loadTime = Date.now() - startTime;
 		await page.waitForTimeout(2000);
 
 		// Extract all SEO-relevant data from the rendered page
@@ -49,15 +49,15 @@ export async function scrapUrl(url) {
 			const twitterCard = getMeta("twitter:card");
 			const viewport = getMeta("viewport");
 			const charsetMeta = document.querySelector("meta[charset]");
-			const charset =
-				charsetMeta ? charsetMeta.attributes("charset") || "" : "";
+			const charset = charsetMeta ? charsetMeta.getAttribute("charset") || "" : "";
+
 
 			const h1Element = document.querySelectorAll("h1");
-			const h1Text = Array.from(h1Element).map(
+			const h1Texts = Array.from(h1Element).map(
 				(el) => el.textContent?.trim() || "",
 			);
 			const headings = {
-				h1: document.querySelectorAll("h1").length,
+				h1: h1Element.length,
 				h2: document.querySelectorAll("h2").length,
 				h3: document.querySelectorAll("h3").length,
 				h4: document.querySelectorAll("h4").length,
@@ -121,7 +121,7 @@ export async function scrapUrl(url) {
 			};
 		});
 
-        const statusCode = response.status() || 0;
+        const statusCode = response?.status() || 0;
         await page.close()
         await browser.close()
 
@@ -133,7 +133,7 @@ export async function scrapUrl(url) {
         console.error("[SCRAPER] Playwright failed: ", error.message);
         if(browser) {
             try {
-                await browser.close
+                await browser.close()
             } catch (error) {
                 console.error("[SCRAPER] browser close failed: ",  error.message);
             }
