@@ -62,18 +62,18 @@ export const analyseUrl = async (req, res) => {
 			analysis.headings = scrapResult.data.headings || {};
 			analysis.links = scrapResult.data.links || {};
 			analysis.images = scrapResult.data.images || {};
-			analysis.keywords = scrapResult.data.keywords || {};
-			analysis.issues = scrapResult.data.issues || {};
-			analysis.loadTime = scrapResult.data.loadTime || {};
-			analysis.pageSize = scrapResult.data.pageSize || {};
-			analysis.wordCount = scrapResult.data.wordCount || {};
+			analysis.keywords = aiResult.data.keywords || [];
+			analysis.issues = aiResult.data.issues || [];
+			analysis.loadTime = scrapResult.data.loadTime || 0;
+			analysis.pageSize = scrapResult.data.pageSize || 0;
+			analysis.wordCount = scrapResult.data.wordCount || 0;
             analysis.status = "completed";
 
             await analysis.save()
 		} catch (bgError) {
 			console.error("Background analysis message: ", bgError.message);
 			try {
-				analysis.status("failed");
+				analysis.status = "failed";
 				await analysis.save();
 			} catch (saveError) {
 				console.error("Failed to save failed status: ", saveError.message);
@@ -81,7 +81,7 @@ export const analyseUrl = async (req, res) => {
 		}
 	} catch (error) {
 		console.error("Analyze URL Error: ", error.message);
-		if (!res.headerSent) {
+		if (!res.headersSent) {
 			res.status(500).json({ success: false, message: "Server error" });
 		}
 	}

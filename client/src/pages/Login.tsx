@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import {
+	Link,
+	useNavigate,
+	useSearchParams,
+	useLocation,
+} from "react-router-dom";
 import {
 	Mail,
 	Lock,
@@ -18,7 +23,7 @@ export default function Login({ state }: { state: string }) {
 	const [loading, setLoading] = useState(false);
 
 	const { login, register } = useApp();
-	const searchParams = useSearchParams();
+	const [searchParams] = useSearchParams();
 	const navigate = useNavigate();
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -33,16 +38,14 @@ export default function Login({ state }: { state: string }) {
 				:	await register(name, email, password);
 
 			if (result?.success) {
-				const rawRedirect = searchParams.get("redirect");
-				const redirect =
-					rawRedirect && rawRedirect.startsWith("/") ?
-						rawRedirect
-					:	"/dashboard";
+				const redirect = searchParams.get("redirect") || "/dashboard";
 
 				navigate(redirect);
 			} else {
-				toast.error(result?.message || "Operation failed");
+				toast.error(result?.message || "Login failed");
 			}
+
+			setLoading(false)
 		} catch (error) {
 			// Fixed the error extraction here
 			toast.error(
