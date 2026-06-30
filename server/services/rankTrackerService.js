@@ -15,7 +15,7 @@ export async function rankTracker(keyword, targetDomain) {
 		});
 		browser = await chromium.connectOverCDP(session.connectUrl);
 		const page = browser.contexts()[0].pages()[0];
-		page.setDefaultNavigationTimeout(4500);
+		page.setDefaultNavigationTimeout(45000);
 
 		// 2. initial google visit and consent handling
 		await page.goto("https://www.google.com", { waitUntil: "networkidle" });
@@ -36,7 +36,7 @@ export async function rankTracker(keyword, targetDomain) {
 
 		// 3. search loop: iterate through up to 5 pages of google results
 		for (let gPage = 0; gPage < 5; gPage++) {
-			await gPage.goto(
+			await page.goto(
 				`https://www.google.com/search?q=${encodeURIComponent(keyword)}&start=${gPage * 10}&num=10&hl=en&gl=us`,
 				{ waitUntil: "networkidle" },
 			);
@@ -128,7 +128,7 @@ export async function rankTracker(keyword, targetDomain) {
 
 		// 6. Finalization: close the browser and extract competitors
 		await browser.close();
-		const competitor = allResult.filter(
+		const competitors = allResult.filter(
 			(r) =>
 				!r.domain.toLowerCase().includes(cleanTarget) &&
 				!cleanTarget.includes(r.domain.toLowerCase().slice(0, 10)),
@@ -140,10 +140,10 @@ export async function rankTracker(keyword, targetDomain) {
 				keyword,
 				targetDomain,
 				position: found?.position || null,
-				page: found.page || null,
+				page: found?.page || null,
 				title: found.title || "",
 				snippet: found.snippet || "",
-				competitor,
+				competitors,
 				totalResultsScanned: allResult.length,
 			},
 		};

@@ -54,6 +54,8 @@ const seoAnalysisSchema = {
 export async function analyzeSeoData(scrapedData) {
 	try {
 		// Prompt for getting SEO Analysis structured data from AI
+		const pageTitle = scrapedData?.metaData?.title || "";
+		const pageDesc = scrapedData?.metaData?.description || "";
 		const prompt = `You are an expert SEO analyst. Analyze the following website data and provide a comprehensive SEO audit.
 
         Website URL: ${scrapedData.url}
@@ -113,21 +115,26 @@ export async function analyzeSeoData(scrapedData) {
         Extract top 10 keywords by frequency from the page content.`;
 
 		const response = await ai.models.generateContent({
-			model: "gemma-4-31b-it", // Ensure this is a supported Gemini/Gemma model name
+			model: 'gemma-4-31b-it', // Ensure this is a supported Gemini/Gemma model name
+			// model: "gemini-3.5-flash", // Ensure this is a supported Gemini/Gemma model name
+			// model: "gemini-1.5-flash", // Ensure this is a supported Gemini/Gemma model name
 			contents: [
 				{
 					role: "user",
 					parts: [{ text: prompt }],
 				},
 			],
+			// generationConfig: {
 			config: {
 				responseMimeType: "application/json", // Must be a string
 				responseSchema: seoAnalysisSchema,
 			},
 		});
 
-		const analysis = JSON.parse(response.text);
+		const rawText = typeof response.text === "function" ? response.text() : response.text;
+		if(!rawText) throw new Error("Empty text returned from Gemini API context")
 
+		const analysis = JSON.parse(rawText);
 		return { success: true, data: analysis };
 	} catch (error) {
 		console.error("Gemini analysis error: ", error.message);

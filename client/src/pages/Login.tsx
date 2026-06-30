@@ -3,7 +3,6 @@ import {
 	Link,
 	useNavigate,
 	useSearchParams,
-	useLocation,
 } from "react-router-dom";
 import {
 	Mail,

@@ -82,7 +82,7 @@ export default function Analyze() {
 				if (attempts > maxAttempts) {
 					if (pollRef.current) clearInterval(pollRef.current);
 					setError(
-						"Analysis is taking more than expected. Check your istor later",
+						"Analysis is taking more than expected. Check again later",
 					);
 					setAnalyzing(false);
 					return;
@@ -98,40 +98,50 @@ export default function Analyze() {
 						setTimeout(() => {
 							navigate(`/report/${id}`);
 						}, 1000);
-					} else if(analysis.status === "failed"){
-                        if(pollRef.current) clearInterval(pollRef.current)
-                            setError("Analysis failed. This AI model might be down.")
-                        setAnalyzing(false)
-                    } else {
-                        // Still processing - advance visual steps
-                        if(attempts > 5) setCurrentStep(2)
-                    }
+					} else if (analysis.status === "failed") {
+						if (pollRef.current) clearInterval(pollRef.current);
+						setError("Analysis failed. This AI model might be down.");
+						setAnalyzing(false);
+					} else {
+						// Still processing - advance visual steps
+						if (attempts > 5) setCurrentStep(2);
+					}
 				} catch {
-                    // ignore polling error
-                }
+					// ignore polling error
+				}
 			}, 2000);
 		} catch (error: any) {
-            setError(error.response?.data?.message || error.message || "Failed to start analysis")
-            setAnalyzing(false)
-        }
+			setError(
+				error.response?.data?.message ||
+					error.message ||
+					"Failed to start analysis",
+			);
+			setAnalyzing(false);
+		}
 	};
 
-	const handleSubmit = (e: React.SubmitEvent) => {
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		handleAnalyze();
 	};
 
 	useEffect(() => {
+		let isMounted = true;
 		const prefillUrl = searchParams.get("url");
-		if (prefillUrl) {
-			(() => setUrl(prefillUrl))();
-			// Auto-start if URL is provided
-			setTimeout(() => handleAnalyze(prefillUrl), 500);
-		}
 
-		return () => {
-			if (pollRef.current) clearInterval(pollRef.current);
-		};
+		if (prefillUrl) {
+			setUrl(prefillUrl);
+			// Auto-start if URL is provided
+			const startTimeout = setTimeout(() => {
+				if (isMounted) handleAnalyze(prefillUrl);
+			}, 500);
+
+			return () => {
+				clearTimeout(startTimeout);
+				isMounted = false;
+				if (pollRef.current) clearInterval(pollRef.current);
+			};
+		}
 	}, []);
 
 	return (
