@@ -13,8 +13,34 @@ export async function scrapUrl(url) {
 			browserSettings: { blockAds: true },
 		});
 		browser = await chromium.connectOverCDP(session.connectUrl);
-		const defaultContext = browser.contexts()[0];
-		const page = defaultContext.pages()[0];
+
+		/* const defaultContext = browser.contexts()[0];
+		const page = defaultContext.pages()[0]; */
+
+		/* let context = browser.contexts();
+		if (!context) {
+			context = await browser.newContext();
+		}
+
+		// Handle remote pages safely
+		let page = context.pages()[0];
+		if (!page) {
+			page = await context.newPage();
+		} */
+
+		const existingContexts = browser.contexts();
+		let context = existingContexts.length > 0 ? existingContexts[0] : null;
+		if (!context) {
+			context = await browser.newContext();
+		}
+
+		// Safely check for existing pages or spawn a fresh tab
+		const existingPages = context.pages();
+		let page = existingPages.length > 0 ? existingPages[0] : null;
+		if (!page) {
+			page = await context.newPage();
+		}
+
 		page.setDefaultNavigationTimeout(30000);
 
 		const startTime = Date.now();
@@ -122,8 +148,8 @@ export async function scrapUrl(url) {
 		});
 
         const statusCode = response?.status() || 0;
-        await page.close()
-        await browser.close()
+		await page.close();
+        await browser.close().catch(() => {})
 
         return {
             success: true,
@@ -138,5 +164,6 @@ export async function scrapUrl(url) {
                 console.error("[SCRAPER] browser close failed: ",  error.message);
             }
         }
+		return { success: false, error: error.message || "Unknown proy scraping issue" };
     }
 }

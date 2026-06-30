@@ -79,7 +79,7 @@ export default function RankTracker() {
 		setAdding(true);
 		setAddError("");
 		try {
-			const res = await api.post("/api/rank/list", {
+			const res = await api.post("/api/rank/add", {
 				keyword: newKeyword.trim(),
 				url: newUrl.trim(),
 			});
@@ -98,7 +98,7 @@ export default function RankTracker() {
 							clearInterval(pollInterval)
 							setKeywords((prev)=> prev.map((k) => (k._id === id ? check.data.tracking : k)))
 						}
-                    } catch (error) {
+                    } catch (error : any) {
 						console.error(error);
                     }
                 }, 3000);

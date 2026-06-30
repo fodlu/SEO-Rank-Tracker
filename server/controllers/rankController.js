@@ -101,7 +101,7 @@ export const refreshKeyword = async (req, res) => {
 			return res
 				.status(404)
 				.json({ success: false, message: "Keyword tracking not found" });
-				
+
 		tracking.status = "checking";
 		await tracking.save();
 		res.json({ success: true, message: "Rank check started" });
@@ -126,7 +126,7 @@ export const deleteKeyword = async (req, res) => {
 
 		res.json({ success: true, message: "Keyword tracking deleted" });
 	} catch (error) {
-		console.error("Refresh Keyword Error: ", error.message);
+		console.error("Delete Keyword Error: ", error.message);
 		res.status(500).json({ success: false, message: "Server Error" });
 	}
 };

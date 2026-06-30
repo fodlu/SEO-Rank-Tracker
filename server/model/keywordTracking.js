@@ -33,7 +33,7 @@ const keywordTrackerSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    domain: {type: String, required: true},
+    domain: {type: String, default: null},
     currentPosition: {type: Number, default: null},
     currentPage: {type: Number, default: null},
     bestPosition: {type: Number, default: null},

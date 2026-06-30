@@ -1,10 +1,18 @@
 import type { AxiosInstance } from "axios";
 import axios from "axios";
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+	createContext,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+	type ReactNode,
+} from "react";
 
 interface User {
-	id: string;
+	email: string;
 	name: string;
+	plan: string;
 	analysisCount?: number;
 }
 
@@ -37,77 +45,97 @@ export function AppProvider({ children }: { children: ReactNode }) {
 	const [loading, setLoading] = useState(true);
 
 	// axios instance with authHeader
-	const api = axios.create({ baseURL: backendUrl });
+	const api = useMemo(() => {
+		const instance = axios.create({ baseURL: backendUrl });
 
-	// update axios header when the token changes
-	api.interceptors.request.use((config) => {
-		const token = localStorage.getItem("token");
+		// update axios header when the token changes
+		instance.interceptors.request.use((config) => {
+			const token = localStorage.getItem("token");
 
-		if (token) {
-			config.headers.Authorization = `Bearer ${token}`;
-		}
+			if (token) {
+				config.headers.Authorization = `Bearer ${token}`;
+			}
 
-		return config;
-	});
+			return config;
+		});
+
+		return instance;
+	}, []);
 
 	const login = async (email: string, password: string) => {
-        try {
-            const res = await axios.post(`${backendUrl}/api/auth/login`, {email, password});
-            if(res.data.success) {
-                setToken(res.data.token)
-                setUser(res.data.user)
-                localStorage.setItem('token', res.data.token)
-                return {success: true}
-            }
-            return {success: false, message: res.data.message}
-        } catch (error: any) {
-            return {success: false, message: error.response?.data?.message || "Login Failed"}
-        }
-    };
+		try {
+			const res = await axios.post(`${backendUrl}/api/auth/login`, {
+				email,
+				password,
+			});
+			if (res.data.success) {
+				setToken(res.data.token);
+				setUser(res.data.user);
+				localStorage.setItem("token", res.data.token);
+				return { success: true };
+			}
+			return { success: false, message: res.data.message };
+		} catch (error: any) {
+			return {
+				success: false,
+				message: error.response?.data?.message || "Login Failed",
+			};
+		}
+	};
 
 	const register = async (name: string, email: string, password: string) => {
-        try {
-            const res = await axios.post(`${backendUrl}/api/auth/register`, {name, email, password});
-            if(res.data.success) {
-                setToken(res.data.token)
-                setUser(res.data.user)
-                localStorage.setItem('token', res.data.token)
-                return {success: true}
-            }
-            return {success: false, message: res.data.message}
-        } catch (error: any) {
-            return {success: false, message: error.response?.data?.message || "Registration Failed"}
-        }
-    };
+		try {
+			const res = await axios.post(`${backendUrl}/api/auth/register`, {
+				name,
+				email,
+				password,
+			});
+			if (res.data.success) {
+				setToken(res.data.token);
+				setUser(res.data.user);
+				localStorage.setItem("token", res.data.token);
+				return { success: true };
+			}
+			return { success: false, message: res.data.message };
+		} catch (error: any) {
+			return {
+				success: false,
+				message: error.response?.data?.message || "Registration Failed",
+			};
+		}
+	};
 
 	const logout = async () => {
-        setToken(null);
-        setUser(null);
-        localStorage.removeItem('token')
-    };
+		setToken(null);
+		setUser(null);
+		localStorage.removeItem("token");
+	};
 
-	const loadUser = async () => {
-        if(!token) {
-            setLoading(false)
-            return
-        }
-        try {
-            const data = await api.get('/api/auth/user')
-            if(data.success) {
-                setUser(data.user)
-            }
-        } catch (error) {
-            localStorage.removeItem('token')
-            setToken(null);
-            setUser(null)
-        } finally {
-            setLoading(false)
-        }
-    };
+	useEffect(() => {
+		const loadUser = async () => {
+			if (!token) {
+				setLoading(false);
+				return;
+			}
+			try {
+				const {data} = await api.get("/api/auth/user");
+				if (data && data.success) {
+					setUser(data.user);
+				} else {
+					logout();
+				}
+			} catch {
+				localStorage.removeItem("token");
+				setToken(null);
+				setUser(null);
+				logout();
+			} finally {
+				setLoading(false);
+			}
+		};
 
-    useEffect(()=>{
-        loadUser()
-    }, [])
+		loadUser();
+	}, [token, api]);
 
 	const value = { user, token, loading, api, login, register, logout };
 
