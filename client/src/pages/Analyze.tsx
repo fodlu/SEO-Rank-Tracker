@@ -82,7 +82,7 @@ export default function Analyze() {
 				if (attempts > maxAttempts) {
 					if (pollRef.current) clearInterval(pollRef.current);
 					setError(
-						"Analysis is taking more than expected. Check again later",
+						"Analysis is taking more than expected. Check your history later",
 					);
 					setAnalyzing(false);
 					return;
